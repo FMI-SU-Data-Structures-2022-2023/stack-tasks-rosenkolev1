@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN // This should come **before** including the 'catch.hpp'.
 #include <vector>
-#include "catch.hpp"
 #include "stackTasks.cpp"
+#include "catch.hpp"
 
 TEST_CASE( "1: Task" ) {
     REQUIRE( task1(1) == 1 );
