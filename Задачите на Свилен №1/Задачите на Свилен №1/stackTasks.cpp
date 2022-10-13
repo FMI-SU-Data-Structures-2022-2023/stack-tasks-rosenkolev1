@@ -6,6 +6,7 @@ using namespace std;
 #include <cmath>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 int factorial(int n)
 {
