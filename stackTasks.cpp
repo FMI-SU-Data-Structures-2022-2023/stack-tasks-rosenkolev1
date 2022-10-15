@@ -7,6 +7,7 @@ using namespace std;
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <stack>
 
 int factorial(int n)
 {
@@ -109,64 +110,116 @@ std::string decompressText(std::string text)
     std::string currentGroupString = "";
     int closingBracketIndex = -1;
 
+    std::string revText = "";
+    std::stack<char> charStack = std::stack<char>();
+
     for (size_t i = 0; i < text.length(); i++)
     {
         char symbol = text[i];
 
-        if (isalpha(symbol) && foundGroup)
+        if (symbol == ')')
         {
-            currentGroupString.push_back(symbol);
-        }
-        else if (isdigit(symbol))
-        {
-            foundGroup = true;
-            startOfGroupIndex = i;
-
-            repeatCountString = "";
-            repeatCount = -1;
-            currentGroupString = "";
-            closingBracketIndex = -1;
-
-            for (size_t y = i; y < text.length(); y++)
+            //Get the repeated word
+            std::string bracketsRevText = "";
+            int numberOfRepeats = 0;
+            while (charStack.top() != '(')
             {
-                if (isdigit(text[y]))
+                bracketsRevText += charStack.top();
+                charStack.pop();
+            }
+            charStack.pop(); //Removes the '('
+
+            //Get the number of times to repeat a word
+            int digitPos = 0;
+            while (!charStack.empty() && isdigit(charStack.top()))
+            {
+                int digit = charStack.top() - '0';
+
+                numberOfRepeats += pow(10, digitPos) * digit;
+                
+                digitPos++;
+                charStack.pop();
+            }
+
+            //Repeat the bracket words many times
+            for (size_t i = 0; i < numberOfRepeats; i++)
+            {
+                for (int y = bracketsRevText.length() - 1; y >= 0; y--)
                 {
-                    repeatCountString.push_back(text[y]);
-                }
-                else
-                {
-                    //We have reached a '(' character
-                    repeatCount = std::stoi(repeatCountString);
-                    i = y;
-                    break;
+                    charStack.push(bracketsRevText[y]); 
                 }
             }
         }
-        else if (symbol == ')' && foundGroup)
+        else
         {
-            closingBracketIndex = i;
+            charStack.push(symbol);
+        }        
 
-            std::string replacementString = "";
-            for (size_t i = 0; i < repeatCount; i++)
-            {
-                replacementString.append(currentGroupString);
-            }
+        //if (isalpha(symbol) && foundGroup)
+        //{
+        //    currentGroupString.push_back(symbol);
+        //}
+        //else if (isdigit(symbol))
+        //{
+        //    foundGroup = true;
+        //    startOfGroupIndex = i;
 
-            text.replace(startOfGroupIndex, closingBracketIndex - startOfGroupIndex + 1, replacementString);
+        //    repeatCountString = "";
+        //    repeatCount = -1;
+        //    currentGroupString = "";
+        //    closingBracketIndex = -1;
 
-            //Reset all the values back to normal and start the cycle from the beginning
-            bool foundGroup = false;
-            std::string repeatCountString = "";
-            int repeatCount = -1;
-            int startOfGroupIndex = -1;
-            std::string currentGroupString = "";
-            int closingBracketIndex = -1;
+        //    for (size_t y = i; y < text.length(); y++)
+        //    {
+        //        if (isdigit(text[y]))
+        //        {
+        //            repeatCountString.push_back(text[y]);
+        //        }
+        //        else
+        //        {
+        //            //We have reached a '(' character
+        //            repeatCount = std::stoi(repeatCountString);
+        //            i = y;
+        //            break;
+        //        }
+        //    }
+        //}
+        //else if (symbol == ')' && foundGroup)
+        //{
+        //    closingBracketIndex = i;
 
-            i = -1;
-        }
+        //    std::string replacementString = "";
+        //    for (size_t i = 0; i < repeatCount; i++)
+        //    {
+        //        replacementString.append(currentGroupString);
+        //    }
+
+        //    text.replace(startOfGroupIndex, closingBracketIndex - startOfGroupIndex + 1, replacementString);
+
+        //    //Reset all the values back to normal and start the cycle from the beginning
+        //    bool foundGroup = false;
+        //    std::string repeatCountString = "";
+        //    int repeatCount = -1;
+        //    int startOfGroupIndex = -1;
+        //    std::string currentGroupString = "";
+        //    int closingBracketIndex = -1;
+
+        //    i = -1;
+        //}
     }
 
-    return text;
+    //Now poop the text from the stack
+    while (!charStack.empty())
+    {
+        revText += charStack.top();
+        charStack.pop();
+    }
+
+    //Reverse the text
+    reverse(revText.begin(), revText.end());
+
+    return revText;
+    //return text;
 }
 
 bool existsPathDFSNoRecursion(std::vector<std::vector<int>> graph, int from, int to)
@@ -374,3 +427,294 @@ bool task6(const string& a, const string& b) {
 	return compareExpressions(a, b);
 }
 
+//int main()
+//{
+//    //TASK 1 - Factorial function
+//    std::cout << "TASK 1" << std::endl;
+//    int n = 0;
+//    std::cout << "The factorial of " << n << "! is: " << factorial(n) << std::endl;
+//    n = 1;
+//    std::cout << "The factorial of " << n << "! is: " << factorial(n) << std::endl;
+//    n = 2;
+//    std::cout << "The factorial of " << n << "! is: " << factorial(n) << std::endl;
+//    n = 7;
+//    std::cout << "The factorial of " << n << "! is: " << factorial(n) << std::endl;
+//
+//    //New line between tasks
+//    std::cout << std::endl;
+//
+//    //TASK 2 - Racket expr
+//    std::cout << "TASK 2" << std::endl;
+//    std::string racketExpr = "";
+//    std::cout << "The racket expr is correct?: \"" << racketExpr << "\" --> "
+//        << (correctRacketExpr(racketExpr) == 1 ? "True" : "False") << std::endl;
+//
+//    racketExpr = "(define [sum n] {+ n 1})";
+//    std::cout << "The racket expr is correct?: \"" << racketExpr << "\" --> "
+//        << (correctRacketExpr(racketExpr) == 1 ? "True" : "False") << std::endl;
+//
+//    racketExpr = "(define [sum n] {+ n 1}) ([{define anything 13}])";
+//    std::cout << "The racket expr is correct?: \"" << racketExpr << "\" --> "
+//        << (correctRacketExpr(racketExpr) == 1 ? "True" : "False") << std::endl;
+//
+//    racketExpr = "(]";
+//    std::cout << "The racket expr is correct?: \"" << racketExpr << "\" --> "
+//        << (correctRacketExpr(racketExpr) == 1 ? "True" : "False") << std::endl;
+//
+//    racketExpr = "(define [sum n] {+ n 1]) ([{define anything 13}])";
+//    std::cout << "The racket expr is correct?: \"" << racketExpr << "\" --> "
+//        << (correctRacketExpr(racketExpr) == 1 ? "True" : "False") << std::endl;
+//
+//    //New line between tasks
+//    std::cout << std::endl;
+//
+//    //TASK 3 - DFS search of graph
+//    std::cout << "TASK 3" << std::endl;
+//    std::vector<std::vector<int>> graph1;
+//    /*
+//
+//    (1, 2) (1, 4) (2, 3)
+//
+//    */
+//    graph1.push_back(std::vector<int> {1, 2});
+//    graph1.push_back(std::vector<int> {1, 4});
+//    graph1.push_back(std::vector<int> {2, 3});
+//
+//    int from = 1;
+//    int to = 2;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph1, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 3;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph1, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 2;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph1, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 4;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph1, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 3;
+//    to = 4;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph1, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    std::vector<std::vector<int>> graph2;
+//    /*
+//
+//    (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3)
+//
+//    */
+//    graph2.push_back(std::vector<int> {1, 2});
+//    graph2.push_back(std::vector<int> {1, 3});
+//    graph2.push_back(std::vector<int> {2, 4});
+//    graph2.push_back(std::vector<int> {2, 5});
+//    graph2.push_back(std::vector<int> {4, 5});
+//    graph2.push_back(std::vector<int> {5, 2});
+//    graph2.push_back(std::vector<int> {5, 6});
+//    graph2.push_back(std::vector<int> {3, 7});
+//    graph2.push_back(std::vector<int> {8, 9});
+//    graph2.push_back(std::vector<int> {9, 3});
+//
+//    from = 1;
+//    to = 6;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 4;
+//    to = 2;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 4;
+//    to = 2;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 7;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 9;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 8;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 8;
+//    to = 7;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFS(graph2, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    //New line between tasks
+//    std::cout << std::endl;
+//
+//    //TASK 4
+//    std::cout << "TASK 4" << std::endl;
+//
+//    std::string compressedText = "aBz3(XY2(io))RoS2(En)"; //aBz3(XYioio)RoSEnEn --> aBzXYioioXYioioXYioioRoSEnEn
+//    std::string expectedDecompressedText = "aBzXYioioXYioioXYioioRoSEnEn";
+//    std::string decompressedText = decompressText(compressedText);
+//
+//    std::cout << "Decompressing text from \"" << compressedText << "\" to --> " << decompressedText << " |==> "
+//        << (decompressedText == expectedDecompressedText ? "True" : "False") << std::endl;
+//
+//    compressedText = "PochUv3(S2(TvAl)2(2(Ite)))4(See) E Mega 3(qkata) GRU10(aA3(a)100())";
+//    //PochUvSTvAlTvAlIteIteIteIteSTvAlTvAlIteIteIteIteSTvAlTvAlIteIteIteIteSeeSeeSeeSee E Mega qkataqkataqkata GRUaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaa
+//    expectedDecompressedText = "PochUvSTvAlTvAlIteIteIteIteSTvAlTvAlIteIteIteIteSTvAlTvAlIteIteIteIteSeeSeeSeeSee E Mega qkataqkataqkata GRUaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaaaAaaa";
+//    decompressedText = decompressText(compressedText);
+//
+//    std::cout << "Decompressing text from \"" << compressedText << "\" to --> " << decompressedText << " |==> "
+//        << (decompressedText == expectedDecompressedText ? "True" : "False") << std::endl;
+//
+//    //New line between tasks
+//    std::cout << std::endl;
+//
+//    //TASK 5
+//    std::cout << "TASK 5" << std::endl;
+//
+//    std::vector<std::vector<int>> graph3;
+//    /*
+//
+//    (1, 2) (1, 4) (2, 3)
+//
+//    */
+//    graph3.push_back(std::vector<int> {1, 2});
+//    graph3.push_back(std::vector<int> {1, 4});
+//    graph3.push_back(std::vector<int> {2, 3});
+//
+//    from = 1;
+//    to = 2;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph3, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 3;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph3, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 2;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph3, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 4;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph3, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 3;
+//    to = 4;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 4) (2, 3) from: " << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph3, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    std::vector<std::vector<int>> graph4;
+//    /*
+//
+//    (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3)
+//
+//    */
+//    graph4.push_back(std::vector<int> {1, 2});
+//    graph4.push_back(std::vector<int> {1, 3});
+//    graph4.push_back(std::vector<int> {2, 4});
+//    graph4.push_back(std::vector<int> {2, 5});
+//    graph4.push_back(std::vector<int> {4, 5});
+//    graph4.push_back(std::vector<int> {5, 2});
+//    graph4.push_back(std::vector<int> {5, 6});
+//    graph4.push_back(std::vector<int> {3, 7});
+//    graph4.push_back(std::vector<int> {8, 9});
+//    graph4.push_back(std::vector<int> {9, 3});
+//
+//    from = 1;
+//    to = 6;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 4;
+//    to = 2;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 4;
+//    to = 2;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 7;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 9;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 8;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 8;
+//    to = 7;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    from = 1;
+//    to = 1;
+//    std::cout << "Is there a path for the graph (1, 2) (1, 3) (2, 4) (2, 5) (4, 5) (5, 2) (5, 6) (3, 7) (8, 9) (9, 3) from: "
+//        << from << " --> " << to << " |==> "
+//        << (existsPathDFSNoRecursion(graph4, from, to) == 1 ? "True" : "False") << std::endl;
+//
+//    //New line between tasks
+//    std::cout << std::endl;
+//
+//    //TASK 6
+//    std::cout << "TASK 6" << std::endl;
+//
+//    std::string expr = "a+b";
+//    std::cout << "Simplifying the expression: " << expr << " ==> " << simplifyExpression(expr) << std::endl;
+//
+//    expr = "c-(a+b)";
+//    std::cout << "Simplifying the expression: " << expr << " ==> " << simplifyExpression(expr) << std::endl;
+//
+//    expr = "d-(c-(-a)+(-b))";
+//    std::cout << "Simplifying the expression: " << expr << " ==> " << simplifyExpression(expr) << std::endl;
+//
+//    expr = "-a-((-b)-(d-c+(-e-f+g))-(+h-(-i)))"; //-a-(-b-d+c+e+f-g-h-i) = -a+b+d-c-e-f+g+h+i
+//    std::cout << "Simplifying the expression: " << expr << " ==> " << simplifyExpression(expr) << std::endl;
+//
+//    expr = "((-a-((-b)-(b-a+(-b-b+a))-(+a-(-b)))))"; //-a-((-b)-(b-a+(-b-b+a))-(+a-(-b))) = -a-(-b-b+a+b+b-a-a-b) = -a+b+b-a-b-b+a+a+b=b
+//    std::cout << "Simplifying the expression: " << expr << " ==> " << simplifyExpression(expr) << std::endl;
+//}

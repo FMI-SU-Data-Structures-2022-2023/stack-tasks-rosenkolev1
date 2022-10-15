@@ -7,6 +7,7 @@ using namespace std;
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <stack>
 
 int factorial(int n)
 {
@@ -109,64 +110,116 @@ std::string decompressText(std::string text)
     std::string currentGroupString = "";
     int closingBracketIndex = -1;
 
+    std::string revText = "";
+    std::stack<char> charStack = std::stack<char>();
+
     for (size_t i = 0; i < text.length(); i++)
     {
         char symbol = text[i];
 
-        if (isalpha(symbol) && foundGroup)
+        if (symbol == ')')
         {
-            currentGroupString.push_back(symbol);
-        }
-        else if (isdigit(symbol))
-        {
-            foundGroup = true;
-            startOfGroupIndex = i;
-
-            repeatCountString = "";
-            repeatCount = -1;
-            currentGroupString = "";
-            closingBracketIndex = -1;
-
-            for (size_t y = i; y < text.length(); y++)
+            //Get the repeated word
+            std::string bracketsRevText = "";
+            int numberOfRepeats = 0;
+            while (charStack.top() != '(')
             {
-                if (isdigit(text[y]))
+                bracketsRevText += charStack.top();
+                charStack.pop();
+            }
+            charStack.pop(); //Removes the '('
+
+            //Get the number of times to repeat a word
+            int digitPos = 0;
+            while (!charStack.empty() && isdigit(charStack.top()))
+            {
+                int digit = charStack.top() - '0';
+
+                numberOfRepeats += pow(10, digitPos) * digit;
+                
+                digitPos++;
+                charStack.pop();
+            }
+
+            //Repeat the bracket words many times
+            for (size_t i = 0; i < numberOfRepeats; i++)
+            {
+                for (int y = bracketsRevText.length() - 1; y >= 0; y--)
                 {
-                    repeatCountString.push_back(text[y]);
-                }
-                else
-                {
-                    //We have reached a '(' character
-                    repeatCount = std::stoi(repeatCountString);
-                    i = y;
-                    break;
+                    charStack.push(bracketsRevText[y]); 
                 }
             }
         }
-        else if (symbol == ')' && foundGroup)
+        else
         {
-            closingBracketIndex = i;
+            charStack.push(symbol);
+        }        
 
-            std::string replacementString = "";
-            for (size_t i = 0; i < repeatCount; i++)
-            {
-                replacementString.append(currentGroupString);
-            }
+        //if (isalpha(symbol) && foundGroup)
+        //{
+        //    currentGroupString.push_back(symbol);
+        //}
+        //else if (isdigit(symbol))
+        //{
+        //    foundGroup = true;
+        //    startOfGroupIndex = i;
 
-            text.replace(startOfGroupIndex, closingBracketIndex - startOfGroupIndex + 1, replacementString);
+        //    repeatCountString = "";
+        //    repeatCount = -1;
+        //    currentGroupString = "";
+        //    closingBracketIndex = -1;
 
-            //Reset all the values back to normal and start the cycle from the beginning
-            bool foundGroup = false;
-            std::string repeatCountString = "";
-            int repeatCount = -1;
-            int startOfGroupIndex = -1;
-            std::string currentGroupString = "";
-            int closingBracketIndex = -1;
+        //    for (size_t y = i; y < text.length(); y++)
+        //    {
+        //        if (isdigit(text[y]))
+        //        {
+        //            repeatCountString.push_back(text[y]);
+        //        }
+        //        else
+        //        {
+        //            //We have reached a '(' character
+        //            repeatCount = std::stoi(repeatCountString);
+        //            i = y;
+        //            break;
+        //        }
+        //    }
+        //}
+        //else if (symbol == ')' && foundGroup)
+        //{
+        //    closingBracketIndex = i;
 
-            i = -1;
-        }
+        //    std::string replacementString = "";
+        //    for (size_t i = 0; i < repeatCount; i++)
+        //    {
+        //        replacementString.append(currentGroupString);
+        //    }
+
+        //    text.replace(startOfGroupIndex, closingBracketIndex - startOfGroupIndex + 1, replacementString);
+
+        //    //Reset all the values back to normal and start the cycle from the beginning
+        //    bool foundGroup = false;
+        //    std::string repeatCountString = "";
+        //    int repeatCount = -1;
+        //    int startOfGroupIndex = -1;
+        //    std::string currentGroupString = "";
+        //    int closingBracketIndex = -1;
+
+        //    i = -1;
+        //}
     }
 
-    return text;
+    //Now poop the text from the stack
+    while (!charStack.empty())
+    {
+        revText += charStack.top();
+        charStack.pop();
+    }
+
+    //Reverse the text
+    reverse(revText.begin(), revText.end());
+
+    return revText;
+    //return text;
 }
 
 bool existsPathDFSNoRecursion(std::vector<std::vector<int>> graph, int from, int to)
